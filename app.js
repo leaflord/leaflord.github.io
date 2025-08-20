@@ -1,8 +1,7 @@
 class FocusTimer {
     constructor() {
-        this.focusTime = 25 * 60; // 25 minutes in seconds
-        this.currentTime = this.focusTime;
-        this.totalTime = this.focusTime;
+        this.currentTime = 0; // Start at 0 for stopwatch
+        this.elapsedFocusTime = 0; // Track elapsed focus time for break calculation
         this.isRunning = false;
         this.isBreakMode = false;
         this.sessionCount = 0;
@@ -48,81 +47,97 @@ class FocusTimer {
         this.statusText.textContent = this.isBreakMode ? 'Break Time' : 'Focusing...';
         
         this.intervalId = setInterval(() => {
-            this.currentTime--;
-            this.updateDisplay();
-            
-            if (this.currentTime <= 0) {
-                this.timerComplete();
+            if (this.isBreakMode) {
+                this.currentTime--;
+                if (this.currentTime <= 0) {
+                    this.stopTimer();
+                    this.completeBreak();
+                }
+            } else {
+                this.currentTime++;
             }
+            this.updateDisplay();
         }, 1000);
     }
     
     stopTimer() {
         this.isRunning = false;
         this.startStopBtn.textContent = 'Start';
-        this.statusText.textContent = 'Paused';
         
         if (this.intervalId) {
             clearInterval(this.intervalId);
             this.intervalId = null;
         }
+        
+        // If stopping during focus mode and there's elapsed time, start break automatically
+        if (!this.isBreakMode && this.currentTime > 0) {
+            this.statusText.textContent = 'Focus Complete!';
+            setTimeout(() => this.startBreak(), 1000);
+        } else {
+            this.statusText.textContent = 'Paused';
+        }
     }
     
     resetTimer() {
-        this.stopTimer();
+        // Stop timer without triggering break
+        this.isRunning = false;
+        this.startStopBtn.textContent = 'Start';
+        
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
         
         if (this.isBreakMode) {
             // Reset to focus mode
             this.isBreakMode = false;
-            this.currentTime = this.focusTime;
-            this.totalTime = this.focusTime;
+            this.currentTime = 0;
+            this.elapsedFocusTime = 0;
             this.timerLabel.textContent = 'Focus Time';
             this.container.classList.remove('break-mode');
         } else {
             // Reset focus timer
-            this.currentTime = this.focusTime;
-            this.totalTime = this.focusTime;
+            this.currentTime = 0;
+            this.elapsedFocusTime = 0;
         }
         
         this.statusText.textContent = 'Ready';
         this.updateDisplay();
     }
     
-    timerComplete() {
-        this.stopTimer();
+    startBreak() {
+        // Store elapsed focus time and start break
+        this.elapsedFocusTime = this.currentTime;
+        this.sessionCount++;
+        this.sessionCountEl.textContent = this.sessionCount;
         
-        if (!this.isBreakMode) {
-            // Focus session completed, start break
-            this.sessionCount++;
-            this.sessionCountEl.textContent = this.sessionCount;
-            
-            const breakTime = Math.floor(this.focusTime / 3); // 1/3 of focus time
-            this.currentTime = breakTime;
-            this.totalTime = breakTime;
-            this.isBreakMode = true;
-            
-            this.timerLabel.textContent = 'Break Time';
-            this.container.classList.add('break-mode');
-            this.statusText.textContent = 'Break Started!';
-            
-            // Auto-start break timer
-            setTimeout(() => this.startTimer(), 1000);
-            
-            // Show notification
-            this.showNotification('Focus session complete!', 'Time for a break 🎉');
-        } else {
-            // Break completed, return to focus mode
-            this.isBreakMode = false;
-            this.currentTime = this.focusTime;
-            this.totalTime = this.focusTime;
-            
-            this.timerLabel.textContent = 'Focus Time';
-            this.container.classList.remove('break-mode');
-            this.statusText.textContent = 'Break Complete!';
-            
-            // Show notification
-            this.showNotification('Break complete!', 'Ready for another focus session? 💪');
-        }
+        const breakTime = Math.floor(this.elapsedFocusTime / 3); // 1/3 of elapsed focus time
+        this.currentTime = breakTime; // Start break countdown from calculated time
+        this.isBreakMode = true;
+        
+        this.timerLabel.textContent = `Break Time (${Math.floor(breakTime / 60)}:${(breakTime % 60).toString().padStart(2, '0')})`;
+        this.container.classList.add('break-mode');
+        this.statusText.textContent = 'Break Started!';
+        
+        // Auto-start break countdown
+        setTimeout(() => this.startTimer(), 1000);
+        
+        // Show notification
+        this.showNotification('Focus session complete!', `Time for a ${Math.floor(breakTime / 60)}:${(breakTime % 60).toString().padStart(2, '0')} break 🎉`);
+    }
+    
+    completeBreak() {
+        // Break completed, return to focus mode
+        this.isBreakMode = false;
+        this.currentTime = 0;
+        this.elapsedFocusTime = 0;
+        
+        this.timerLabel.textContent = 'Focus Time';
+        this.container.classList.remove('break-mode');
+        this.statusText.textContent = 'Break Complete!';
+        
+        // Show notification
+        this.showNotification('Break complete!', 'Ready for another focus session? 💪');
         
         this.updateDisplay();
     }
@@ -134,9 +149,18 @@ class FocusTimer {
         this.timeDisplay.textContent = 
             `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         
-        // Update progress bar
-        const progress = ((this.totalTime - this.currentTime) / this.totalTime) * 100;
-        this.progressFill.style.width = `${progress}%`;
+        // Update progress bar - for stopwatch mode, show continuous progress
+        if (this.isBreakMode) {
+            // For break mode, show countdown progress
+            const breakDuration = Math.floor(this.elapsedFocusTime / 3);
+            const progress = ((breakDuration - this.currentTime) / breakDuration) * 100;
+            this.progressFill.style.width = `${Math.max(0, progress)}%`;
+        } else {
+            // For focus mode, show elapsed time as continuous progress (no fixed end)
+            // Use a visual representation that grows with time
+            const progress = Math.min((this.currentTime / 1800) * 100, 100); // Cap at 30 minutes for visual purposes
+            this.progressFill.style.width = `${progress}%`;
+        }
         
         // Update document title for tab visibility
         document.title = `${this.timeDisplay.textContent} - Focus Timer`;
