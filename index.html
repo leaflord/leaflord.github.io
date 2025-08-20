@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <title>Focus Timer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Focus Timer</h1>
+        </header>
+        
+        <main>
+            <div class="timer-display">
+                <div class="time-text" id="timeDisplay">25:00</div>
+                <div class="timer-label" id="timerLabel">Focus Time</div>
+            </div>
+            
+            <div class="controls">
+                <button id="startStopBtn" class="btn btn-primary">Start</button>
+                <button id="resetBtn" class="btn btn-secondary">Reset</button>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="session-info">
+                <div class="info-item">
+                    <span class="label">Sessions:</span>
+                    <span id="sessionCount">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Status:</span>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
