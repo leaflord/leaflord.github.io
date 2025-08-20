@@ -9,6 +9,7 @@ class FocusTimer {
         
         this.initializeElements();
         this.bindEvents();
+        this.createAudioContext();
         this.updateDisplay();
     }
     
@@ -136,10 +137,55 @@ class FocusTimer {
         this.container.classList.remove('break-mode');
         this.statusText.textContent = 'Break Complete!';
         
+        // Play beep and vibrate when break ends
+        this.playBeep();
+        this.triggerVibration();
+        
         // Show notification
         this.showNotification('Break complete!', 'Ready for another focus session? 💪');
         
         this.updateDisplay();
+    }
+    
+    createAudioContext() {
+        // Create audio context for beep sound
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.log('Audio context not supported');
+            this.audioContext = null;
+        }
+    }
+    
+    playBeep() {
+        if (!this.audioContext) return;
+        
+        // Create a beep sound using Web Audio API
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        // Configure beep sound (800Hz for 300ms)
+        oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+        oscillator.type = 'sine';
+        
+        // Fade in and out to avoid clicks
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, this.audioContext.currentTime + 0.01);
+        gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.3);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.3);
+    }
+    
+    triggerVibration() {
+        // Vibrate on mobile devices if supported
+        if ('vibrate' in navigator) {
+            // Vibrate pattern: vibrate for 200ms, pause 100ms, vibrate 200ms
+            navigator.vibrate([200, 100, 200]);
+        }
     }
     
     updateDisplay() {
