@@ -176,8 +176,8 @@ class FocusTimer {
         // Initialize audio objects for different sounds
         this.focusBeepAudio = new Audio('sounds/focus-beep.wav');
         this.focusMiniBellAudio = new Audio('sounds/focus-minibell.wav');
-        this.relaxBeepAudio = new Audio('sounds/relax-beep.wav');
-        this.relaxMiniBellAudio = new Audio('sounds/relax-minibell.wav');
+        this.relaxBeepAudio = new Audio('sounds/relax-beep.mp3');
+        this.relaxMiniBellAudio = new Audio('sounds/relax-minibell.mp3');
         
         // Set volume levels
         this.focusBeepAudio.volume = 0.7;
