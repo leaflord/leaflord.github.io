@@ -6,16 +6,17 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--background-gradient);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #333;
+    transition: background 0.5s ease;
 }
 
 .container {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--container-bg);
     backdrop-filter: blur(10px);
     border-radius: 20px;
     padding: 2rem;
@@ -24,13 +25,15 @@ body {
     min-width: 320px;
     max-width: 400px;
     width: 90vw;
+    transition: background 0.3s ease;
 }
 
 header h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #2563eb;
+    color: var(--primary-color);
     margin-bottom: 2rem;
+    transition: color 0.3s ease;
 }
 
 .timer-display {
@@ -40,15 +43,17 @@ header h1 {
 .time-text {
     font-size: 4rem;
     font-weight: 300;
-    color: #1e293b;
+    color: var(--text-primary);
     font-variant-numeric: tabular-nums;
     margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
 }
 
 .timer-label {
     font-size: 1.2rem;
-    color: #64748b;
+    color: var(--text-secondary);
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
 .controls {
@@ -70,12 +75,13 @@ header h1 {
 }
 
 .btn-primary {
-    background: #2563eb;
+    background: var(--primary-color);
     color: white;
+    transition: background 0.3s ease;
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: var(--primary-hover);
     transform: translateY(-2px);
 }
 
@@ -84,12 +90,13 @@ header h1 {
 }
 
 .btn-secondary {
-    background: #e2e8f0;
-    color: #475569;
+    background: var(--secondary-color);
+    color: var(--text-secondary);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .btn-secondary:hover {
-    background: #cbd5e1;
+    background: var(--secondary-hover);
     transform: translateY(-2px);
 }
 
@@ -114,10 +121,110 @@ header h1 {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    background: var(--progress-gradient);
     border-radius: 4px;
-    transition: width 1s linear;
+    transition: width 1s linear, background 0.3s ease;
     width: 0%;
+}
+
+:root {
+    /* Focus theme (default) */
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary-color: #e2e8f0;
+    --secondary-hover: #cbd5e1;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --container-bg: rgba(255, 255, 255, 0.95);
+    --progress-gradient: linear-gradient(90deg, #2563eb, #3b82f6);
+    --break-color: #059669;
+    --break-hover: #047857;
+    --break-gradient: linear-gradient(90deg, #059669, #10b981);
+}
+
+/* Relax theme */
+.theme-relax {
+    --primary-color: #7c3aed;
+    --primary-hover: #6d28d9;
+    --secondary-color: #f3e8ff;
+    --secondary-hover: #e9d5ff;
+    --text-primary: #581c87;
+    --text-secondary: #7c2d92;
+    --background-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    --container-bg: rgba(255, 255, 255, 0.92);
+    --progress-gradient: linear-gradient(90deg, #7c3aed, #a855f7);
+    --break-color: #059669;
+    --break-hover: #047857;
+    --break-gradient: linear-gradient(90deg, #059669, #10b981);
+}
+
+.settings {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: #475569;
+    margin-bottom: 0.75rem;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
+.setting-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.setting-item input[type="checkbox"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.setting-item label {
+    font-weight: 500;
+}
+
+.setting-item input[type="number"],
+.setting-item select {
+    width: 80px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    text-align: center;
+    background: white;
+    cursor: pointer;
+}
+
+.setting-item input[type="number"] {
+    width: 60px;
+}
+
+.setting-item input[type="number"]:focus,
+.setting-item select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.setting-item input[type="number"]:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
 }
 
 .session-info {
@@ -142,24 +249,25 @@ header h1 {
 #statusText {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 /* Break mode styling */
 .break-mode .timer-label {
-    color: #059669;
+    color: var(--break-color);
 }
 
 .break-mode .progress-fill {
-    background: linear-gradient(90deg, #059669, #10b981);
+    background: var(--break-gradient);
 }
 
 .break-mode .btn-primary {
-    background: #059669;
+    background: var(--break-color);
 }
 
 .break-mode .btn-primary:hover {
-    background: #047857;
+    background: var(--break-hover);
 }
 
 /* Responsive design */

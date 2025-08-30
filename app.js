@@ -6,10 +6,15 @@ class FocusTimer {
         this.isBreakMode = false;
         this.sessionCount = 0;
         this.intervalId = null;
+        this.miniBellInterval = 5; // Default 5 minutes
+        this.lastMiniBellTime = 0; // Track when last mini-bell played
+        this.miniBellEnabled = false; // Default disabled for focus theme
+        this.currentTheme = 'focus'; // Default theme
         
         this.initializeElements();
         this.bindEvents();
-        this.createAudioContext();
+        this.initializeAudio();
+        this.applyThemeDefaults();
         this.updateDisplay();
     }
     
@@ -22,11 +27,27 @@ class FocusTimer {
         this.sessionCountEl = document.getElementById('sessionCount');
         this.statusText = document.getElementById('statusText');
         this.container = document.querySelector('.container');
+        this.miniBellIntervalInput = document.getElementById('miniBellInterval');
+        this.miniBellEnabledInput = document.getElementById('miniBellEnabled');
+        this.themeSelect = document.getElementById('themeSelect');
     }
     
     bindEvents() {
         this.startStopBtn.addEventListener('click', () => this.toggleTimer());
         this.resetBtn.addEventListener('click', () => this.resetTimer());
+        this.miniBellIntervalInput.addEventListener('change', () => {
+            this.miniBellInterval = parseInt(this.miniBellIntervalInput.value) || 5;
+        });
+        this.miniBellEnabledInput.addEventListener('change', () => {
+            this.miniBellEnabled = this.miniBellEnabledInput.checked;
+            // Update interval input state
+            this.miniBellIntervalInput.disabled = !this.miniBellEnabled;
+        });
+        this.themeSelect.addEventListener('change', () => {
+            this.currentTheme = this.themeSelect.value;
+            this.applyTheme();
+            this.applyThemeDefaults();
+        });
         
         // Register service worker
         if ('serviceWorker' in navigator) {
@@ -56,6 +77,7 @@ class FocusTimer {
                 }
             } else {
                 this.currentTime++;
+                this.checkMiniBell();
             }
             this.updateDisplay();
         }, 1000);
@@ -102,6 +124,9 @@ class FocusTimer {
             this.elapsedFocusTime = 0;
         }
         
+        // Reset mini-bell tracking
+        this.lastMiniBellTime = 0;
+        
         this.statusText.textContent = 'Ready';
         this.updateDisplay();
     }
@@ -147,37 +172,65 @@ class FocusTimer {
         this.updateDisplay();
     }
     
-    createAudioContext() {
-        // Create audio context for beep sound
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (e) {
-            console.log('Audio context not supported');
-            this.audioContext = null;
-        }
+    initializeAudio() {
+        // Initialize audio objects for different sounds
+        this.focusBeepAudio = new Audio('sounds/focus-beep.wav');
+        this.focusMiniBellAudio = new Audio('sounds/focus-minibell.wav');
+        this.relaxBeepAudio = new Audio('sounds/relax-beep.wav');
+        this.relaxMiniBellAudio = new Audio('sounds/relax-minibell.wav');
+        
+        // Set volume levels
+        this.focusBeepAudio.volume = 0.7;
+        this.focusMiniBellAudio.volume = 0.5;
+        this.relaxBeepAudio.volume = 0.6;
+        this.relaxMiniBellAudio.volume = 0.4;
     }
     
     playBeep() {
-        if (!this.audioContext) return;
+        const audio = this.currentTheme === 'relax' ? this.relaxBeepAudio : this.focusBeepAudio;
+        audio.currentTime = 0; // Reset to beginning
+        audio.play().catch(e => console.log('Audio play failed:', e));
+    }
+    
+    playMiniBell() {
+        const audio = this.currentTheme === 'relax' ? this.relaxMiniBellAudio : this.focusMiniBellAudio;
+        audio.currentTime = 0; // Reset to beginning
+        audio.play().catch(e => console.log('Audio play failed:', e));
+    }
+    
+    checkMiniBell() {
+        // Only check mini-bell during focus mode (not break mode) and if enabled
+        if (this.isBreakMode || !this.miniBellEnabled) return;
         
-        // Create a beep sound using Web Audio API
-        const oscillator = this.audioContext.createOscillator();
-        const gainNode = this.audioContext.createGain();
+        const miniBellIntervalSeconds = this.miniBellInterval * 60;
+        const timeSinceLastBell = this.currentTime - this.lastMiniBellTime;
         
-        oscillator.connect(gainNode);
-        gainNode.connect(this.audioContext.destination);
+        if (timeSinceLastBell >= miniBellIntervalSeconds && this.currentTime > 0) {
+            this.playMiniBell();
+            this.lastMiniBellTime = this.currentTime;
+        }
+    }
+    
+    applyTheme() {
+        // Apply theme class to body
+        document.body.className = this.currentTheme === 'relax' ? 'theme-relax' : '';
+    }
+    
+    applyThemeDefaults() {
+        if (this.currentTheme === 'focus') {
+            // Focus mode: mini-bell disabled
+            this.miniBellEnabled = false;
+            this.miniBellInterval = 5;
+        } else {
+            // Relax mode: mini-bell enabled with 1 minute interval
+            this.miniBellEnabled = true;
+            this.miniBellInterval = 1;
+        }
         
-        // Configure beep sound (800Hz for 300ms)
-        oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-        oscillator.type = 'sine';
-        
-        // Fade in and out to avoid clicks
-        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, this.audioContext.currentTime + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.3);
-        
-        oscillator.start(this.audioContext.currentTime);
-        oscillator.stop(this.audioContext.currentTime + 0.3);
+        // Update UI elements
+        this.miniBellEnabledInput.checked = this.miniBellEnabled;
+        this.miniBellIntervalInput.value = this.miniBellInterval;
+        this.miniBellIntervalInput.disabled = !this.miniBellEnabled;
     }
     
     triggerVibration() {
