@@ -22,7 +22,6 @@ class FocusTimer {
     
     initializeElements() {
         this.timeDisplay = document.getElementById('timeDisplay');
-        this.timerLabel = document.getElementById('timerLabel');
         this.startStopBtn = document.getElementById('startStopBtn');
         this.resetBtn = document.getElementById('resetBtn');
         this.progressFill = document.getElementById('progressFill');
@@ -131,7 +130,6 @@ class FocusTimer {
             this.isBreakMode = false;
             this.currentTime = 0;
             this.elapsedFocusTime = 0;
-            this.timerLabel.textContent = 'Focus Time';
             this.container.classList.remove('break-mode');
         } else {
             // Reset focus timer
@@ -174,7 +172,6 @@ class FocusTimer {
         this.currentTime = 0;
         this.elapsedFocusTime = 0;
         
-        this.timerLabel.textContent = 'Focus Time';
         this.container.classList.remove('break-mode');
         this.statusText.textContent = 'Break Complete!';
         
@@ -263,17 +260,8 @@ class FocusTimer {
         // Update UI elements
         this.updateMiniBellUI();
         
-        // Update timer label based on mode
-        this.updateTimerLabel();
     }
     
-    updateTimerLabel() {
-        if (this.isBreakMode) {
-            this.timerLabel.textContent = `Break Time (${Math.floor(this.currentTime / 60)}:${(this.currentTime % 60).toString().padStart(2, '0')})`;
-        } else {
-            this.timerLabel.textContent = this.currentMode === 'focus' ? 'Focus Time' : 'Relax Time';
-        }
-    }
     
     updateMiniBellUI() {
         // Update radio button states

@@ -13,18 +13,19 @@ body {
     justify-content: center;
     color: #333;
     transition: background 0.5s ease;
+    margin: 0;
+    padding: 1rem;
 }
 
 .container {
     background: var(--container-bg);
     backdrop-filter: blur(10px);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: clamp(1rem, 4vw, 2rem);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     text-align: center;
-    min-width: 300px;
-    max-width: 360px;
-    width: 90vw;
+    width: 100%;
+    max-width: min(90vw, 400px);
     transition: background 0.3s ease;
 }
 
@@ -33,10 +34,10 @@ header {
 }
 
 header h1 {
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 5vw, 2rem);
     font-weight: 700;
     color: var(--primary-color);
-    margin-bottom: 1rem;
+    margin-bottom: clamp(0.75rem, 3vw, 1rem);
     transition: color 0.3s ease;
 }
 
@@ -79,20 +80,15 @@ header h1 {
 }
 
 .time-text {
-    font-size: 4rem;
+    font-size: clamp(2.5rem, 12vw, 5rem);
     font-weight: 300;
     color: var(--text-primary);
     font-variant-numeric: tabular-nums;
-    margin-bottom: 0.5rem;
+    margin-bottom: clamp(0.5rem, 2vw, 1rem);
+    line-height: 1;
     transition: color 0.3s ease;
 }
 
-.timer-label {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
 
 .controls {
     display: flex;
@@ -102,14 +98,14 @@ header h1 {
 }
 
 .btn {
-    padding: 0.75rem 2rem;
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 4vw, 1.5rem);
     border: none;
     border-radius: 12px;
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 3vw, 1rem);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-width: 100px;
+    min-width: clamp(80px, 20vw, 120px);
 }
 
 .btn-primary {
@@ -226,10 +222,11 @@ body.mode-relax {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.95rem;
+    gap: clamp(0.25rem, 2vw, 0.5rem);
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
     color: #475569;
     margin-bottom: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .setting-item:last-child {
@@ -362,7 +359,299 @@ input[type="radio"]:disabled + .radio-btn {
     background: var(--break-hover);
 }
 
-/* Responsive design */
+/* Responsive Design for Multiple Device Types */
+
+/* Web Browsers - Desktop/Laptop */
+@media (min-width: 768px) {
+    .container {
+        max-width: 420px;
+        padding: 2rem;
+    }
+    
+    .time-text {
+        font-size: 5rem;
+    }
+    
+    .controls {
+        gap: 1.5rem;
+    }
+}
+
+/* Smartphones - Portrait */
+@media (max-width: 480px) and (orientation: portrait) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .container {
+        padding: 1rem;
+        border-radius: 12px;
+        max-width: 95vw;
+    }
+    
+    .time-text {
+        font-size: clamp(2rem, 15vw, 3.5rem);
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 0.75rem;
+    }
+    
+    .radio-group {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Foldable Phones - Unfolded (wide aspect ratio) */
+@media (min-width: 600px) and (max-width: 900px) and (min-aspect-ratio: 1.5) {
+    .container {
+        max-width: 500px;
+        padding: 1.5rem 2rem;
+    }
+    
+    .controls {
+        flex-direction: row;
+        gap: 2rem;
+    }
+    
+    .bottom-panel {
+        height: auto;
+    }
+    
+    .settings, .session-info {
+        position: static;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+}
+
+/* Square Display 360x360 (smartwatches, square screens) */
+@media (max-width: 360px) and (max-height: 360px) {
+    body {
+        padding: 0.5rem;
+        min-height: 360px;
+        height: 360px;
+        overflow: hidden;
+    }
+    
+    .container {
+        padding: 0.75rem;
+        border-radius: 12px;
+        width: calc(100% - 1rem);
+        height: calc(100% - 1rem);
+        max-width: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    header {
+        margin-bottom: 0.5rem;
+        flex-shrink: 0;
+    }
+    
+    header h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mode-nav {
+        padding: 0.125rem;
+        gap: 0.25rem;
+    }
+    
+    .mode-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .timer-display {
+        margin-bottom: 0.75rem;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .time-text {
+        font-size: 2.5rem;
+        margin-bottom: 0;
+        line-height: 0.9;
+    }
+    
+    .controls {
+        flex-direction: row;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: auto;
+        flex: 1;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        margin-bottom: 0.5rem;
+        flex-shrink: 0;
+    }
+    
+    .bottom-panel {
+        height: auto;
+        flex-shrink: 0;
+    }
+    
+    .settings {
+        position: static;
+        background: rgba(241, 245, 249, 0.3);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        padding: 0.5rem;
+        height: auto;
+    }
+    
+    .setting-item {
+        flex-direction: row;
+        gap: 0.25rem;
+        font-size: 0.7rem;
+        margin-bottom: 0;
+        flex-wrap: nowrap;
+    }
+    
+    .setting-item label {
+        font-size: 0.65rem;
+        white-space: nowrap;
+    }
+    
+    .radio-group {
+        gap: 0.125rem;
+    }
+    
+    .radio-btn {
+        padding: 0.125rem 0.375rem;
+        font-size: 0.6rem;
+        border-radius: 4px;
+    }
+    
+    .session-info {
+        display: none;
+    }
+}
+
+/* Smartwatch - Very Small Screens */
+@media (max-width: 300px) {
+    body {
+        padding: 0.25rem;
+    }
+    
+    .container {
+        padding: 0.75rem;
+        border-radius: 8px;
+        min-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    header {
+        margin-bottom: 0.5rem;
+    }
+    
+    header h1 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mode-nav {
+        padding: 0.125rem;
+        gap: 0.25rem;
+    }
+    
+    .mode-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    .time-text {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .controls {
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        margin-bottom: 0.75rem;
+    }
+    
+    .bottom-panel {
+        height: auto;
+    }
+    
+    .settings {
+        position: static;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        gap: 0.25rem;
+        font-size: 0.7rem;
+    }
+    
+    .radio-btn {
+        padding: 0.125rem 0.25rem;
+        font-size: 0.6rem;
+    }
+    
+    .session-info {
+        display: none; /* Hide on smartwatch due to space constraints */
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    body {
+        align-items: flex-start;
+        padding-top: 1rem;
+    }
+    
+    .container {
+        margin-top: 0;
+    }
+    
+    .timer-display {
+        margin-bottom: 1rem;
+    }
+    
+    .controls {
+        margin-bottom: 1rem;
+    }
+}
 @media (max-width: 480px) {
     .container {
         padding: 1.5rem;
