@@ -29,8 +29,7 @@ class FocusTimer {
         this.sessionCountEl = document.getElementById('sessionCount');
         this.statusText = document.getElementById('statusText');
         this.container = document.querySelector('.container');
-        this.miniBellIntervalInput = document.getElementById('miniBellInterval');
-        this.miniBellToggle = document.getElementById('miniBellToggle');
+        this.miniBellRadios = document.querySelectorAll('input[name="miniBell"]');
         this.focusModeBtn = document.getElementById('focusModeBtn');
         this.relaxModeBtn = document.getElementById('relaxModeBtn');
         
@@ -39,15 +38,20 @@ class FocusTimer {
     bindEvents() {
         this.startStopBtn.addEventListener('click', () => this.toggleTimer());
         this.resetBtn.addEventListener('click', () => this.resetTimer());
-        this.miniBellIntervalInput.addEventListener('change', () => {
-            this.miniBellInterval = parseInt(this.miniBellIntervalInput.value) || 5;
-        });
-        this.miniBellToggle.addEventListener('click', () => {
-            // Only allow toggling in relax mode
-            if (this.currentMode === 'relax') {
-                this.miniBellEnabled = !this.miniBellEnabled;
-                this.updateMiniBellUI();
-            }
+        this.miniBellRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (this.currentMode === 'relax') {
+                    const value = radio.value;
+                    if (value === 'off') {
+                        this.miniBellEnabled = false;
+                        this.miniBellInterval = 5;
+                    } else {
+                        this.miniBellEnabled = true;
+                        this.miniBellInterval = parseInt(value);
+                    }
+                    this.updateMiniBellUI();
+                }
+            });
         });
         this.focusModeBtn.addEventListener('click', () => {
             this.switchMode('focus');
@@ -73,11 +77,8 @@ class FocusTimer {
     startTimer() {
         this.isRunning = true;
         this.startStopBtn.textContent = 'Stop';
-        if (this.isBreakMode) {
-            this.statusText.textContent = 'Break Time';
-        } else {
-            this.statusText.textContent = this.currentMode === 'focus' ? 'Focusing...' : 'Relaxing...';
-        }
+        this.startStopBtn.classList.add('running');
+        this.statusText.textContent = this.isBreakMode ? 'Break in progress...' : 'Timer running...';
         
         this.intervalId = setInterval(() => {
             if (this.isBreakMode) {
@@ -97,6 +98,8 @@ class FocusTimer {
     stopTimer() {
         this.isRunning = false;
         this.startStopBtn.textContent = 'Start';
+        this.startStopBtn.classList.remove('running');
+        this.statusText.textContent = 'Paused';
         
         if (this.intervalId) {
             clearInterval(this.intervalId);
@@ -139,6 +142,7 @@ class FocusTimer {
         // Reset mini-bell tracking
         this.lastMiniBellTime = 0;
         
+        this.startStopBtn.classList.remove('running');
         this.statusText.textContent = 'Ready';
         this.updateDisplay();
     }
@@ -257,7 +261,6 @@ class FocusTimer {
         }
         
         // Update UI elements
-        this.miniBellIntervalInput.value = this.miniBellInterval;
         this.updateMiniBellUI();
         
         // Update timer label based on mode
@@ -273,19 +276,22 @@ class FocusTimer {
     }
     
     updateMiniBellUI() {
-        // In focus mode, disable the button entirely
-        if (this.currentMode === 'focus') {
-            this.miniBellToggle.classList.add('disabled');
-            this.miniBellToggle.classList.remove('active');
-            this.miniBellToggle.textContent = '🔕';
-            this.miniBellIntervalInput.disabled = true;
-        } else {
-            // In relax mode, allow normal toggling
-            this.miniBellToggle.classList.remove('disabled');
-            this.miniBellToggle.classList.toggle('active', this.miniBellEnabled);
-            this.miniBellToggle.textContent = this.miniBellEnabled ? '🔔' : '🔕';
-            this.miniBellIntervalInput.disabled = !this.miniBellEnabled;
-        }
+        // Update radio button states
+        this.miniBellRadios.forEach(radio => {
+            if (this.currentMode === 'focus') {
+                // Disable all radio buttons in focus mode
+                radio.disabled = true;
+                radio.checked = false;
+            } else {
+                // Enable radio buttons in relax mode
+                radio.disabled = false;
+                if (!this.miniBellEnabled && radio.value === 'off') {
+                    radio.checked = true;
+                } else if (this.miniBellEnabled && radio.value === this.miniBellInterval.toString()) {
+                    radio.checked = true;
+                }
+            }
+        });
     }
     
     togglePanelVisibility(selector, show) {

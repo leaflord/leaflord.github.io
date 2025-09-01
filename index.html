@@ -36,10 +36,20 @@
             <div class="bottom-panel">
                 <div class="settings">
                     <div class="setting-item">
-                        <button id="miniBellToggle" class="bell-btn" title="Toggle mini-bell">🔔</button>
-                        <label for="miniBellInterval">Mini-bell every:</label>
-                        <input type="number" id="miniBellInterval" min="1" max="60" value="5">
-                        <span>minutes</span>
+                        <label>Mini-bell:</label>
+                        <div class="radio-group">
+                            <input type="radio" id="bell-off" name="miniBell" value="off" checked>
+                            <label for="bell-off" class="radio-btn">Off</label>
+                            
+                            <input type="radio" id="bell-1m" name="miniBell" value="1">
+                            <label for="bell-1m" class="radio-btn">1m</label>
+                            
+                            <input type="radio" id="bell-2m" name="miniBell" value="2">
+                            <label for="bell-2m" class="radio-btn">2m</label>
+                            
+                            <input type="radio" id="bell-5m" name="miniBell" value="5">
+                            <label for="bell-5m" class="radio-btn">5m</label>
+                        </div>
                     </div>
                 </div>
                 
