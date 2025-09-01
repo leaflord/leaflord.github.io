@@ -18,26 +18,64 @@ body {
 .container {
     background: var(--container-bg);
     backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     text-align: center;
-    min-width: 320px;
-    max-width: 400px;
+    min-width: 300px;
+    max-width: 360px;
     width: 90vw;
     transition: background 0.3s ease;
+}
+
+header {
+    margin-bottom: 1.5rem;
 }
 
 header h1 {
     font-size: 2rem;
     font-weight: 700;
     color: var(--primary-color);
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     transition: color 0.3s ease;
 }
 
+.mode-nav {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 12px;
+    padding: 0.25rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--text-primary);
+}
+
+.mode-btn.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .timer-display {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .time-text {
@@ -60,7 +98,7 @@ header h1 {
     display: flex;
     gap: 1rem;
     justify-content: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .btn {
@@ -116,7 +154,7 @@ header h1 {
     background: #e2e8f0;
     border-radius: 4px;
     overflow: hidden;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .progress-fill {
@@ -128,43 +166,52 @@ header h1 {
 }
 
 :root {
-    /* Focus theme (default) */
     --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
-    --secondary-color: #e2e8f0;
-    --secondary-hover: #cbd5e1;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
+    --secondary-color: #64748b;
     --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --container-bg: rgba(255, 255, 255, 0.95);
-    --progress-gradient: linear-gradient(90deg, #2563eb, #3b82f6);
+    --text-color: #1e293b;
+    --button-bg: #3b82f6;
+    --button-hover: #2563eb;
+    --progress-bg: #e2e8f0;
+    --progress-fill: #3b82f6;
+    --progress-gradient: linear-gradient(90deg, #3b82f6, #2563eb);
     --break-color: #059669;
     --break-hover: #047857;
     --break-gradient: linear-gradient(90deg, #059669, #10b981);
 }
 
-/* Relax theme */
-.theme-relax {
+body.mode-relax {
     --primary-color: #7c3aed;
-    --primary-hover: #6d28d9;
-    --secondary-color: #f3e8ff;
-    --secondary-hover: #e9d5ff;
-    --text-primary: #581c87;
-    --text-secondary: #7c2d92;
     --background-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-    --container-bg: rgba(255, 255, 255, 0.92);
+    --button-bg: #7c3aed;
+    --button-hover: #6d28d9;
+    --progress-fill: #7c3aed;
     --progress-gradient: linear-gradient(90deg, #7c3aed, #a855f7);
     --break-color: #059669;
     --break-hover: #047857;
     --break-gradient: linear-gradient(90deg, #059669, #10b981);
 }
 
+.bottom-panel {
+    position: relative;
+    height: 50px;
+    margin-bottom: 0;
+}
+
 .settings {
-    margin-bottom: 2rem;
-    padding: 1rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
     background: rgba(241, 245, 249, 0.5);
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s ease;
+    height: 50px;
+    overflow: visible;
+    z-index: 5;
 }
 
 .setting-item {
@@ -181,17 +228,6 @@ header h1 {
     margin-bottom: 0;
 }
 
-.setting-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--primary-color);
-    cursor: pointer;
-}
-
-.setting-item input[type="checkbox"]:focus {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-}
 
 .setting-item label {
     font-weight: 500;
@@ -227,10 +263,51 @@ header h1 {
     border-color: #e2e8f0;
 }
 
+.bell-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-right: 0.5rem;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.bell-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+}
+
+.bell-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.bell-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
 .session-info {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: space-between;
     gap: 1rem;
+    transition: all 0.3s ease;
+    height: 50px;
+    overflow: hidden;
 }
 
 .info-item {

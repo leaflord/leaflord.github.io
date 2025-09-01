@@ -6,15 +6,17 @@ class FocusTimer {
         this.isBreakMode = false;
         this.sessionCount = 0;
         this.intervalId = null;
-        this.miniBellInterval = 5; // Default 5 minutes
-        this.lastMiniBellTime = 0; // Track when last mini-bell played
-        this.miniBellEnabled = false; // Default disabled for focus theme
-        this.currentTheme = 'focus'; // Default theme
+        this.miniBellInterval = 5;
+        this.lastMiniBellTime = 0;
+        this.miniBellEnabled = false;
+        this.currentMode = 'focus';
         
         this.initializeElements();
         this.bindEvents();
         this.initializeAudio();
-        this.applyThemeDefaults();
+        this.applyMode();
+        this.applyModeDefaults();
+        this.updateModeButtons();
         this.updateDisplay();
     }
     
@@ -28,8 +30,10 @@ class FocusTimer {
         this.statusText = document.getElementById('statusText');
         this.container = document.querySelector('.container');
         this.miniBellIntervalInput = document.getElementById('miniBellInterval');
-        this.miniBellEnabledInput = document.getElementById('miniBellEnabled');
-        this.themeSelect = document.getElementById('themeSelect');
+        this.miniBellToggle = document.getElementById('miniBellToggle');
+        this.focusModeBtn = document.getElementById('focusModeBtn');
+        this.relaxModeBtn = document.getElementById('relaxModeBtn');
+        
     }
     
     bindEvents() {
@@ -38,15 +42,18 @@ class FocusTimer {
         this.miniBellIntervalInput.addEventListener('change', () => {
             this.miniBellInterval = parseInt(this.miniBellIntervalInput.value) || 5;
         });
-        this.miniBellEnabledInput.addEventListener('change', () => {
-            this.miniBellEnabled = this.miniBellEnabledInput.checked;
-            // Update interval input state
-            this.miniBellIntervalInput.disabled = !this.miniBellEnabled;
+        this.miniBellToggle.addEventListener('click', () => {
+            // Only allow toggling in relax mode
+            if (this.currentMode === 'relax') {
+                this.miniBellEnabled = !this.miniBellEnabled;
+                this.updateMiniBellUI();
+            }
         });
-        this.themeSelect.addEventListener('change', () => {
-            this.currentTheme = this.themeSelect.value;
-            this.applyTheme();
-            this.applyThemeDefaults();
+        this.focusModeBtn.addEventListener('click', () => {
+            this.switchMode('focus');
+        });
+        this.relaxModeBtn.addEventListener('click', () => {
+            this.switchMode('relax');
         });
         
         // Register service worker
@@ -66,7 +73,11 @@ class FocusTimer {
     startTimer() {
         this.isRunning = true;
         this.startStopBtn.textContent = 'Stop';
-        this.statusText.textContent = this.isBreakMode ? 'Break Time' : 'Focusing...';
+        if (this.isBreakMode) {
+            this.statusText.textContent = 'Break Time';
+        } else {
+            this.statusText.textContent = this.currentMode === 'focus' ? 'Focusing...' : 'Relaxing...';
+        }
         
         this.intervalId = setInterval(() => {
             if (this.isBreakMode) {
@@ -93,7 +104,8 @@ class FocusTimer {
         }
         
         // If stopping during focus mode and there's elapsed time, start break automatically
-        if (!this.isBreakMode && this.currentTime > 0) {
+        // Only enable break timer in focus mode
+        if (!this.isBreakMode && this.currentTime > 0 && this.currentMode === 'focus') {
             this.statusText.textContent = 'Focus Complete!';
             setTimeout(() => this.startBreak(), 1000);
         } else {
@@ -149,7 +161,7 @@ class FocusTimer {
         setTimeout(() => this.startTimer(), 1000);
         
         // Show notification
-        this.showNotification('Focus session complete!', `Time for a ${Math.floor(breakTime / 60)}:${(breakTime % 60).toString().padStart(2, '0')} break 🎉`);
+        this.showNotification('Session complete!', `Time for a ${Math.floor(breakTime / 60)}:${(breakTime % 60).toString().padStart(2, '0')} break 🎉`);
     }
     
     completeBreak() {
@@ -167,7 +179,8 @@ class FocusTimer {
         this.triggerVibration();
         
         // Show notification
-        this.showNotification('Break complete!', 'Ready for another focus session? 💪');
+        const sessionText = this.currentMode === 'focus' ? 'focus session' : 'relax session';
+        this.showNotification('Break complete!', `Ready for another ${sessionText}? 💪`);
         
         this.updateDisplay();
     }
@@ -187,50 +200,119 @@ class FocusTimer {
     }
     
     playBeep() {
-        const audio = this.currentTheme === 'relax' ? this.relaxBeepAudio : this.focusBeepAudio;
+        const audio = this.currentMode === 'relax' ? this.relaxBeepAudio : this.focusBeepAudio;
         audio.currentTime = 0; // Reset to beginning
         audio.play().catch(e => console.log('Audio play failed:', e));
     }
     
     playMiniBell() {
-        const audio = this.currentTheme === 'relax' ? this.relaxMiniBellAudio : this.focusMiniBellAudio;
+        const audio = this.currentMode === 'relax' ? this.relaxMiniBellAudio : this.focusMiniBellAudio;
         audio.currentTime = 0; // Reset to beginning
         audio.play().catch(e => console.log('Audio play failed:', e));
     }
     
     checkMiniBell() {
-        // Only check mini-bell during focus mode (not break mode) and if enabled
-        if (this.isBreakMode || !this.miniBellEnabled) return;
-        
-        const miniBellIntervalSeconds = this.miniBellInterval * 60;
-        const timeSinceLastBell = this.currentTime - this.lastMiniBellTime;
-        
-        if (timeSinceLastBell >= miniBellIntervalSeconds && this.currentTime > 0) {
-            this.playMiniBell();
-            this.lastMiniBellTime = this.currentTime;
+        // Mini-bell only works in relax mode
+        if (this.miniBellEnabled && !this.isBreakMode && this.isRunning && this.currentMode === 'relax') {
+            const currentMinutes = Math.floor(this.currentTime / 60);
+            const lastMiniBellMinutes = Math.floor(this.lastMiniBellTime / 60);
+            
+            if (currentMinutes > 0 && currentMinutes % this.miniBellInterval === 0 && currentMinutes !== lastMiniBellMinutes) {
+                this.playMiniBell();
+                this.lastMiniBellTime = this.currentTime;
+            }
         }
     }
     
-    applyTheme() {
-        // Apply theme class to body
-        document.body.className = this.currentTheme === 'relax' ? 'theme-relax' : '';
+    switchMode(mode) {
+        this.currentMode = mode;
+        this.applyMode();
+        this.applyModeDefaults();
+        this.updateModeButtons();
     }
     
-    applyThemeDefaults() {
-        if (this.currentTheme === 'focus') {
-            // Focus mode: mini-bell disabled
+    applyMode() {
+        // Apply mode class to body
+        document.body.className = this.currentMode === 'relax' ? 'mode-relax' : '';
+    }
+    
+    updateModeButtons() {
+        // Update active state of mode buttons
+        this.focusModeBtn.classList.toggle('active', this.currentMode === 'focus');
+        this.relaxModeBtn.classList.toggle('active', this.currentMode === 'relax');
+    }
+    
+    applyModeDefaults() {
+        if (this.currentMode === 'focus') {
+            // Focus mode: mini-bell disabled, hide mini-bell settings, show session info
             this.miniBellEnabled = false;
             this.miniBellInterval = 5;
+            this.hideMiniBellSettings();
+            this.showSessionInfo();
         } else {
-            // Relax mode: mini-bell enabled with 1 minute interval
-            this.miniBellEnabled = true;
+            // Relax mode: mini-bell available, show mini-bell settings, hide session info
             this.miniBellInterval = 1;
+            this.showMiniBellSettings();
+            this.hideSessionInfo();
         }
         
         // Update UI elements
-        this.miniBellEnabledInput.checked = this.miniBellEnabled;
         this.miniBellIntervalInput.value = this.miniBellInterval;
-        this.miniBellIntervalInput.disabled = !this.miniBellEnabled;
+        this.updateMiniBellUI();
+        
+        // Update timer label based on mode
+        this.updateTimerLabel();
+    }
+    
+    updateTimerLabel() {
+        if (this.isBreakMode) {
+            this.timerLabel.textContent = `Break Time (${Math.floor(this.currentTime / 60)}:${(this.currentTime % 60).toString().padStart(2, '0')})`;
+        } else {
+            this.timerLabel.textContent = this.currentMode === 'focus' ? 'Focus Time' : 'Relax Time';
+        }
+    }
+    
+    updateMiniBellUI() {
+        // In focus mode, disable the button entirely
+        if (this.currentMode === 'focus') {
+            this.miniBellToggle.classList.add('disabled');
+            this.miniBellToggle.classList.remove('active');
+            this.miniBellToggle.textContent = '🔕';
+            this.miniBellIntervalInput.disabled = true;
+        } else {
+            // In relax mode, allow normal toggling
+            this.miniBellToggle.classList.remove('disabled');
+            this.miniBellToggle.classList.toggle('active', this.miniBellEnabled);
+            this.miniBellToggle.textContent = this.miniBellEnabled ? '🔔' : '🔕';
+            this.miniBellIntervalInput.disabled = !this.miniBellEnabled;
+        }
+    }
+    
+    togglePanelVisibility(selector, show) {
+        const element = document.querySelector(selector);
+        if (show) {
+            element.style.transform = 'translateY(0)';
+            element.style.opacity = '1';
+        } else {
+            element.style.transform = selector === '.settings' ? 'translateY(-20px)' : 'translateY(20px)';
+            element.style.opacity = '0';
+        }
+    }
+    
+    showMiniBellSettings() {
+        this.togglePanelVisibility('.settings', true);
+    }
+    
+    hideMiniBellSettings() {
+        this.togglePanelVisibility('.settings', false);
+    }
+    
+    showSessionInfo() {
+        this.togglePanelVisibility('.session-info', true);
+    }
+    
+    hideSessionInfo() {
+        this.togglePanelVisibility('.session-info', false);
     }
     
     triggerVibration() {
@@ -262,7 +344,8 @@ class FocusTimer {
         }
         
         // Update document title for tab visibility
-        document.title = `${this.timeDisplay.textContent} - Focus Timer`;
+        const modeText = this.currentMode === 'focus' ? 'Focus' : 'Relax';
+        document.title = `${this.timeDisplay.textContent} - ${modeText} Timer`;
     }
     
     showNotification(title, body) {

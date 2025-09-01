@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2563eb">
-    <title>Focus Timer</title>
+    <title>Timer</title>
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>">
     <link rel="stylesheet" href="styles.css">
@@ -12,7 +12,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>Focus Timer</h1>
+            <nav class="mode-nav">
+                <button id="focusModeBtn" class="mode-btn active" data-mode="focus">Focus</button>
+                <button id="relaxModeBtn" class="mode-btn" data-mode="relax">Relax</button>
+            </nav>
         </header>
         
         <main>
@@ -30,33 +33,25 @@
                 <div class="progress-fill" id="progressFill"></div>
             </div>
             
-            <div class="settings">
-                <div class="setting-item">
-                    <label for="themeSelect">Theme:</label>
-                    <select id="themeSelect">
-                        <option value="focus">Focus</option>
-                        <option value="relax">Relax</option>
-                    </select>
+            <div class="bottom-panel">
+                <div class="settings">
+                    <div class="setting-item">
+                        <button id="miniBellToggle" class="bell-btn" title="Toggle mini-bell">🔔</button>
+                        <label for="miniBellInterval">Mini-bell every:</label>
+                        <input type="number" id="miniBellInterval" min="1" max="60" value="5">
+                        <span>minutes</span>
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <input type="checkbox" id="miniBellEnabled">
-                    <label for="miniBellEnabled">Enable mini-bell</label>
-                </div>
-                <div class="setting-item">
-                    <label for="miniBellInterval">Mini-bell every:</label>
-                    <input type="number" id="miniBellInterval" min="1" max="60" value="5">
-                    <span>minutes</span>
-                </div>
-            </div>
-            
-            <div class="session-info">
-                <div class="info-item">
-                    <span class="label">Sessions:</span>
-                    <span id="sessionCount">0</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Status:</span>
-                    <span id="statusText">Ready</span>
+                
+                <div class="session-info">
+                    <div class="info-item">
+                        <span class="label">Sessions:</span>
+                        <span id="sessionCount">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Status:</span>
+                        <span id="statusText">Ready</span>
+                    </div>
                 </div>
             </div>
         </main>
