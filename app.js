@@ -11,6 +11,10 @@ class FocusTimer {
         this.miniBellEnabled = false;
         this.currentMode = 'focus';
         
+        // Timestamp tracking for accurate timing
+        this.startTimestamp = null; // For focus/relax stopwatch
+        this.breakEndTimestamp = null; // For break countdown
+        
         this.initializeElements();
         this.bindEvents();
         this.initializeAudio();
@@ -79,15 +83,29 @@ class FocusTimer {
         this.startStopBtn.classList.add('running');
         this.statusText.textContent = this.isBreakMode ? 'Break in progress...' : 'Timer running...';
         
+        // Initialize timestamps for accurate timing
+        if (this.isBreakMode) {
+            // Countdown mode: set breakEndTimestamp if not already set
+            if (!this.breakEndTimestamp) {
+                this.breakEndTimestamp = Date.now() + this.currentTime * 1000;
+            }
+        } else {
+            // Stopwatch mode: set startTimestamp if not already set
+            if (!this.startTimestamp) {
+                this.startTimestamp = Date.now() - this.currentTime * 1000;
+            }
+        }
+        
         this.intervalId = setInterval(() => {
             if (this.isBreakMode) {
-                this.currentTime--;
-                if (this.currentTime <= 0) {
+                const remaining = Math.ceil((this.breakEndTimestamp - Date.now()) / 1000);
+                this.currentTime = remaining;
+                if (remaining <= 0) {
                     this.stopTimer();
                     this.completeBreak();
                 }
             } else {
-                this.currentTime++;
+                this.currentTime = Math.floor((Date.now() - this.startTimestamp) / 1000);
                 this.checkMiniBell();
             }
             this.updateDisplay();
@@ -104,6 +122,10 @@ class FocusTimer {
             clearInterval(this.intervalId);
             this.intervalId = null;
         }
+        
+        // Clear timestamps so they can be recalculated on resume
+        this.startTimestamp = null;
+        this.breakEndTimestamp = null;
         
         // If stopping during focus mode and there's elapsed time, start break automatically
         // Only enable break timer in focus mode
@@ -124,6 +146,10 @@ class FocusTimer {
             clearInterval(this.intervalId);
             this.intervalId = null;
         }
+        
+        // Clear timestamps
+        this.startTimestamp = null;
+        this.breakEndTimestamp = null;
         
         if (this.isBreakMode) {
             // Reset to focus mode
@@ -155,7 +181,12 @@ class FocusTimer {
         this.currentTime = breakTime; // Start break countdown from calculated time
         this.isBreakMode = true;
         
-        this.timerLabel.textContent = `Break Time (${Math.floor(breakTime / 60)}:${(breakTime % 60).toString().padStart(2, '0')})`;
+        // Set break end timestamp for accurate countdown
+        this.breakEndTimestamp = Date.now() + breakTime * 1000;
+        
+        // Removed obsolete timerLabel update
+        // this.timerLabel.textContent = `Break Time (${Math.floor(breakTime / 60)}:${(breakTime % 60).toString().padStart(2, '0')})`;
+        
         this.container.classList.add('break-mode');
         this.statusText.textContent = 'Break Started!';
         
