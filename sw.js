@@ -42,3 +42,40 @@ self.addEventListener('activate', (event) => {
         })
     );
 });
+
+// Listen for push events and show notifications
+self.addEventListener('push', function(event) {
+    let data = {};
+    if (event.data) {
+        data = event.data.json();
+    }
+    const title = data.title || 'Focus Timer Alert';
+    const options = {
+        body: data.body || 'You have a new alert!',
+        icon: 'icons/icon-192.png',
+        badge: 'icons/icon-192.png',
+        vibrate: [200, 100, 200],
+        data: data.url || '/' // Optional: open URL on click
+    };
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+// Optional: Handle notification click
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    const url = event.notification.data || '/';
+    event.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            for (let client of windowClients) {
+                if (client.url === url && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
+    );
+});
